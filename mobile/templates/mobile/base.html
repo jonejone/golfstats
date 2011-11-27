@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+
+        <!-- jQuerymobile resources -->
+        <link href="http://code.jquery.com/mobile/latest/jquery.mobile.min.css" rel="stylesheet" type="text/css" />
+        <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+        <script src="http://code.jquery.com/mobile/latest/jquery.mobile.js"></script>
+
+        <!-- Custom resources -->
+        <script src="{{ STATIC_URL }}game.js"></script>
+        <link href="{{ STATIC_URL }}mobile.css" rel="stylesheet" type="text/css" />
+
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+        {% block before_body_end %}{% endblock %}
+    </body>
+</html>

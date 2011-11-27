@@ -1,0 +1,114 @@
+{% extends "mobile/base.html" %}
+
+{% block content %}
+
+<div data-role="page">
+    <div data-role="header">
+        <h1>Welcome to Golfstats!</h1>
+    </div>
+    <div data-role="content">
+        <p>Want to do some stuff?</p>
+        <p><a href="#play-the-game">Lets play a game!</a></p>
+    </div>
+</div>
+
+<div data-role="page" id="game">
+    <div data-role="header">
+        <h1>Game X</h1>
+    </div>
+    <div data-role="content">
+        <h2>Players</h2>
+        <ul data-role="listview" id="game-players">
+            <li>Player x</li>
+        </ul>
+        <p>I think we should <a href="#play-hole-one">play hole one</a></p>
+    </div>
+</div>
+
+<div data-role="page" id="game-hole">
+    <div data-role="header">
+        <h1>Hole X</h1>
+
+        <div data-role="navbar">
+            <ul>
+                <li><a class="betong-button" href="#">Betong</a></li>
+                <li><a class="starframe-button" href="#">Starframe</a></li>
+            </ul>
+        </div>
+    </div>
+    <div data-role="content">
+        <ul data-role="listview" id="game-hole-players">
+        </ul>
+    </div>
+
+    <div data-role="footer">
+        <div class="ui-bar footer-buttons">
+            <a class="previous-hole" data-role="button" href="#" data-icon="arrow-l">Previous hole</a>
+            <a class="next-hole" data-role="button" href="#" data-icon="arrow-r" data-iconpos="right">Next hole</a>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block before_body_end %}
+<script>
+var game;
+$(function() {
+    game = new Game();
+
+    var course = {
+        id: 1,
+        name: "Skåredalen",
+        par: 18,
+        holes: [
+            { name: "Hole 1", order: 1, par: 3 },
+            { name: "Hole 2", order: 2, par: 4 },
+            { name: "Hole 3", order: 3, par: 3 },
+            { name: "Hole 4", order: 4, par: 5 },
+            { name: "Hole 5", order: 5, par: 3 },
+            { name: "Hole 6", order: 6, par: 3 },
+        ],
+    };
+
+    var players = [
+        { name: 'Roger', id: 1 },
+        { name: 'Torbjørn', id: 2 },
+        { name: 'Tute', id: 3 },
+        { name: 'Jone', id: 4 },
+    ];
+
+    game.setCourse(course);
+    game.setPlayers(players);
+});
+
+var game_view;
+(function(window) {
+
+    game_view = new GameView();
+
+    {% autoescape off %}
+    var players_json = '{{ players }}';
+    var courses_json = '{{ courses }}';
+    {% endautoescape %}
+
+    game_view.setPlayers($.parseJSON(players_json));
+    game_view.setCourses($.parseJSON(courses_json));
+
+    $('a[href="#play-the-game"]').click(function() {
+        game_view.setCurrentGame(game);        
+        $.mobile.changePage("#game");
+    });
+
+    $('a[href="#play-hole-one"]').click(function() {
+        game_view.setCurrentHole(game.course.holes[0]); 
+        $.mobile.changePage('#game-hole');
+    });
+
+
+}(window));
+
+
+</script>
+{% endblock %}
