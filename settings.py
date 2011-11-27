@@ -133,6 +133,7 @@ INSTALLED_APPS = (
     'players',
     'games',
     'api',
+    'mobile',
 
     # Third-party applications
     'registration',
@@ -206,4 +207,6 @@ LOGIN_NOT_REQUIRED_URLS = (
     re.compile("^golfstats-courses-arenas-detail$"),
     re.compile("^golfstats-courses-courses$"),
     re.compile("^golfstats-courses-course-detail$"),
+
+    re.compile("^golfstats-mobile-index$"),
 )
