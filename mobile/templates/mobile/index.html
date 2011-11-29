@@ -7,8 +7,7 @@
         <h1>Welcome to Golfstats!</h1>
     </div>
     <div data-role="content">
-        <p>Want to do some stuff?</p>
-        <p><a href="#play-the-game">Lets play a game!</a></p>
+        <p><a data-role="button" href="#create-game">Create new game</a></p>
     </div>
 </div>
 
@@ -22,6 +21,35 @@
             <li>Player x</li>
         </ul>
         <p>I think we should <a href="#play-hole-one">play hole one</a></p>
+    </div>
+</div>
+
+<div data-role="page" id="create-game">
+    <div data-role="header">
+        <h1>Create new game</h1>
+    </div>
+
+    <div data-role="content">
+        <label for="select-course">Course</label>
+        <select id="select-course" name="course">
+            <!-- Options will be added dynamically -->
+        </select>
+
+        <fieldset>
+            <label for="select-players">Players</label>
+            <select id="select-players" name="players" multiple data-native-menu="false">
+                <!-- Options will be added dynamically -->
+            </select>
+        </fieldset>
+
+        <fieldset class="ui-grid-a">
+            <div class="ui-block-a">
+                <button type="button" data-rel="back" data-theme="c">Cancel</button>
+            </div>
+            <div class="ui-block-b">
+                <button id="create-game-button" type="submit" data-theme="b">Create game</button>
+            </div>
+        </fieldset>
     </div>
 </div>
 
@@ -56,31 +84,6 @@
 <script>
 var game;
 $(function() {
-    game = new Game();
-
-    var course = {
-        id: 1,
-        name: "Skåredalen",
-        par: 18,
-        holes: [
-            { name: "Hole 1", order: 1, par: 3 },
-            { name: "Hole 2", order: 2, par: 4 },
-            { name: "Hole 3", order: 3, par: 3 },
-            { name: "Hole 4", order: 4, par: 5 },
-            { name: "Hole 5", order: 5, par: 3 },
-            { name: "Hole 6", order: 6, par: 3 },
-        ],
-    };
-
-    var players = [
-        { name: 'Roger', id: 1 },
-        { name: 'Torbjørn', id: 2 },
-        { name: 'Tute', id: 3 },
-        { name: 'Jone', id: 4 },
-    ];
-
-    game.setCourse(course);
-    game.setPlayers(players);
 });
 
 var game_view;
@@ -96,6 +99,8 @@ var game_view;
     game_view.setPlayers($.parseJSON(players_json));
     game_view.setCourses($.parseJSON(courses_json));
 
+
+    /*
     $('a[href="#play-the-game"]').click(function() {
         game_view.setCurrentGame(game);        
         $.mobile.changePage("#game");
@@ -105,6 +110,7 @@ var game_view;
         game_view.setCurrentHole(game.course.holes[0]); 
         $.mobile.changePage('#game-hole');
     });
+    */
 
 
 }(window));

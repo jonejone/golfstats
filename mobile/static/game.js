@@ -1,9 +1,7 @@
-
-
 (function(window) {
 
     var GameView = function() {
-        this.game = null;
+        this.current_game = null;
         this.current_hole = null;
         this.players = null;
         this.courses = null;
@@ -11,13 +9,56 @@
     } 
 
     GameView.prototype = {
-        
+
         setPlayers: function(players) {
             this.players = players;
+
+            /* Now update all view with list of players */
+            var create = $('#create-game');
+            var select = $('#select-players');
+
+            $.each(players, function(index, player) {
+                var option = $('<option></option>')
+                    .text(player.name)
+                    .attr('value', player.id);
+
+                select.append(option);
+            });
         },
 
         setCourses: function(courses) {
             this.courses = courses;
+            var select = $('#select-course');
+
+            $.each(courses, function(index, course) {
+                var option = $('<option></option>')
+                    .text(course.name)
+                    .attr('value', course.id);
+
+                select.append(option);
+            });
+        },
+
+        getPlayerById: function(id) {
+            var return_player = false;
+            $.each(this.players, function(index, player) {
+                if(player.id == id) {
+                    return_player = player;
+                }
+            });
+
+            return return_player;
+        },
+
+        getCourseById: function(id) {
+            var return_course = false;
+            $.each(this.courses, function(index, course) {
+                if(course.id == id) {
+                    return_course = course;
+                }
+            });
+
+            return return_course;
         },
 
         bindEventHandlers: function() {
@@ -35,13 +76,78 @@
                 that.changePrevHole();
             });
 
+            $('.starframe-button').click(function(e) {
+                var birdie = that.current_hole.par - 1;
+
+                $.each(that.current_game.players, function(i, player) {
+                    that.updatePlayerScore(player, birdie);
+                });
+            });
+
+            $('.betong-button').click(function(e) {
+                var par = that.current_hole.par;
+
+                $.each(that.current_game.players, function(i, player) {
+                    that.updatePlayerScore(player, par);
+                });
+            });
+
+            $(document).bind('pagebeforecreate', function(e, data) {
+                if(e.target.id == 'game-hole') {
+                    /* Lets fake a game */
+                    /*
+                    var game = new Game();
+                    var players = [
+                        that.players[0],
+                        that.players[1],
+                        that.players[2],
+                    ];
+
+                    var course = that.courses[0];
+
+                    game.setCourse(course);
+                    game.setPlayers(players);
+
+                    that.setCurrentGame(game);
+                    that.setCurrentHole(
+                        that.getHoleByOrder(1));
+                    */
+                }
+            });
+
             // Setting of scores
             $('#game-hole input[type=radio]').live('change', function(e) {
                 var parent = $(this).parents('li').get(0);
                 var throw_count = $(parent).find('input[type=radio]:checked').val();
 
                 $(parent).find('.throw-count').val(throw_count);
+                that.updateBetongStarframeButtons();
             });
+
+            $('#create-game-button').click(function() {
+                var player_ids = $('#select-players').val();
+                var players = [];
+                var course_id = $('#select-course').val();
+
+                $.each(player_ids, function(index, player_id) {
+                    players.push(that.getPlayerById(player_id));
+                });
+
+                var course = that.getCourseById(course_id);
+
+                /* Okay, lets create our new game */
+                var game = new Game();
+                game.setPlayers(players);
+                game.setCourse(course);
+                game.start();
+
+                that.setCurrentGame(game);
+                that.setCurrentHole(
+                    that.getHoleByOrder(1));
+
+                $.mobile.changePage('#game-hole');
+            });
+
         },
 
         setCurrentHole: function(hole) {
@@ -55,7 +161,7 @@
             /* We need to save scores */
             $('ul#game-hole-players .throw-count').each(function(index, value) {
                 if($(value).val() != '') {
-                    that.game.setPlayerHoleScore(
+                    that.current_game.setPlayerHoleScore(
                         $(value).data('player-id'),
                         that.current_hole,
                         { throws: $(value).val(),
@@ -70,21 +176,11 @@
             s.find('.throw-count').val('');
 
             /* Now we must populate scores for this hole if it exists */
-            var scores = that.game.getScoresByHole(hole);
+            var scores = that.current_game.getScoresByHole(hole);
 
             $.each(scores, function(index, value) {
-                var player = $('#player-id-' + index);
-                player.find('.throw-count').val(value.throws);
-
-                /* Look for corresponding radio input */
-                var radio = $('#radio-choice-player-' + index + '-' + value.throws);
-
-                if(radio) {
-                    radio.attr('checked', 'checked');
-                    $('label[for=radio-choice-player-' 
-                        + index + '-' + value.throws + ']')
-                        .addClass('ui-btn-active')
-                }
+                that.updatePlayerScore(
+                    that.getPlayerById(index), value.throws);
             });
 
             /* Finally set the new hole as current */
@@ -92,7 +188,60 @@
 
         },
 
+        updateBetongStarframeButtons: function() {
+            var par = this.current_hole.par;
+            var birdie = this.current_hole.par - 1;
+
+            $('#game-hole div[data-role="navbar"] .ui-btn-active')
+                .removeClass('ui-btn-active');
+
+            if(this.allPlayersHaveScore(par)) {
+                /* This is a betong hole */
+                $('.betong-button').addClass('ui-btn-active');
+            } else if(this.allPlayersHaveScore(birdie)) {
+                /* This is a starframe hole */
+                $('.starframe-button').addClass('ui-btn-active');
+            }
+        },
+
+        allPlayersHaveScore: function(score) {
+            var search = $('#game-hole .throw-count');
+            var result = true;
+
+            if(search.length == this.current_game.players.length) {
+                for(var x=0; x < search.length; x++) {
+                    if($(search[x]).val() != score) {
+                        result = false;
+                    }
+                }
+            }
+
+            return result;
+        },
+
+        updatePlayerScore: function(player, score) {
+            $('#player-id-' + player.id).
+                find('.throw-count').val(score);
+
+            /* Look for corresponding radio input */
+            $('#player-id-' + player.id)
+                .find('.ui-btn-active')
+                .removeClass('ui-btn-active');
+
+            var radio = $('#radio-choice-player-' + player.id + '-' + score);
+
+            if(radio) {
+                radio.attr('checked', 'checked');
+                $('label[for=radio-choice-player-'
+                    + player.id + '-' + score + ']')
+                    .addClass('ui-btn-active');
+            }
+
+            this.updateBetongStarframeButtons();
+        },
+
         setCurrentGame: function(game) {
+            this.current_game = game;
             this.game = game;
 
             /* Now we need to make UI changes for this given game */
@@ -104,7 +253,7 @@
                 end: 5,
             };
 
-            $.each(this.game.players, function(index, value) {
+            $.each(this.current_game.players, function(index, value) {
                 players_ul.append($('<li>' + value.name + '</li>'));
 
                 var li = $('<li></li>').attr('id', 'player-id-' + value.id);
@@ -169,7 +318,7 @@
         getHoleByOrder: function(order) {
             var hole = null;
 
-            $.each(this.game.course.holes, function(index, value) {
+            $.each(this.current_game.course.holes, function(index, value) {
                 if(value.order == order) {
                     hole = value;
                 }
@@ -189,7 +338,6 @@
 
     var Game = function() {
         this.course = null;
-        this.current_hole = null;
         this.players = [];
         this.scores = {};
     } 

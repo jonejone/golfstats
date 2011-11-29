@@ -4,3 +4,12 @@
     display: inline;
     margin-left: 1em;
 }
+
+.footer-buttons {
+    width: 350px;
+    margin: 0 auto;
+}
+
+.footer-buttons a:first-child {
+    margin-right: 30px;
+}

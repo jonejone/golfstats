@@ -14,6 +14,19 @@ def index(request):
     return render(request, 'mobile/index.html', context)
 
 
+def _get_course_holes(course):
+    holes = []
+
+    for coursehole in course.coursehole_set.all():
+        holes.append({
+            'name': coursehole.name,
+            'par': coursehole.hole.par,
+            'order': coursehole.order,
+        });
+
+    return holes
+
+
 def _get_courses_json():
     data = []
 
@@ -22,7 +35,7 @@ def _get_courses_json():
             'id': course.id,
             'par': course.get_course_par(),
             'name': course.name,
-            'holes': [],
+            'holes': _get_course_holes(course),
         })
 
     return simplejson.dumps(data)
