@@ -855,3 +855,42 @@ class GamesApiTest(TestCase):
 
         # Check that game is finished
         self.assertEqual(game.state, game.STATE_FINISHED)
+
+    def test_create_game(self):
+        # Make course, arena and players
+        players = make_players(3)
+        arena = make_a_whole_arena()
+        course = make_course(arena)[0]
+
+        # Prepare data for new game
+        game_data = {
+            "players": [p.id for p in players],
+            "course": course.id,
+        }
+
+        game_payload = simplejson.dumps(game_data)
+
+        # POST data to api
+        c = get_logged_in_client()
+        r = c.post("/api/games/", game_payload,
+            content_type="application/json")
+
+        # Response looks good ?
+        self.assertEqual(r.status_code, 201)
+
+        res = simplejson.loads(r.content)
+        created_game = Game.objects.get(id=res['id'])
+
+        # Check that we are on the right course
+        self.assertEqual(created_game.course.id, course.id)
+
+        # Check that players are correct
+        self.assertEqual(created_game.players.count(),
+            len(game_data['players']))
+
+        for player in created_game.players.all():
+            self.assertIn(player.id, game_data['players'])
+
+        # Check that game has "Created" state
+        self.assertEqual(created_game.state, Game.STATE_CREATED)
+

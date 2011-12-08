@@ -1,13 +1,15 @@
 from piston.handler import BaseHandler
 from piston.utils import rc
 
+from datetime import datetime
+
 from games.models import Game, GameHole
 
 
 class GameHandler(BaseHandler):
-    allowed_methods = ("GET",)
+    allowed_methods = ("GET", "POST")
     model = Game
-    fields = ("id", "state", "verified",)
+    fields = ("id", "state", "verified", "course", "players")
     # TODO: Game JSON is now extremely minimal
 
     def read(self, req, pk=None):
@@ -17,6 +19,27 @@ class GameHandler(BaseHandler):
             return base.get(pk=pk)
 
         return base.all()
+
+
+    def create(self, req):
+        if req.content_type and req.data:
+            data = req.data
+
+            game = self.model.objects.create(
+                course_id=data['course'],
+                created=datetime.now(),
+                creator_id=req.user.id,
+            )
+
+            game.players = data['players']
+
+            response = rc.CREATED
+            response.content = dict(id=game.id)
+
+            return response
+
+        else:
+            return rc.BAD_REQUEST
 
 
 class GameHoleHandler(BaseHandler):
