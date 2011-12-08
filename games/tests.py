@@ -893,4 +893,3 @@ class GamesApiTest(TestCase):
 
         # Check that game has "Created" state
         self.assertEqual(created_game.state, Game.STATE_CREATED)
-

@@ -20,7 +20,6 @@ class GameHandler(BaseHandler):
 
         return base.all()
 
-
     def create(self, req):
         if req.content_type and req.data:
             data = req.data
