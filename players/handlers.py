@@ -1,13 +1,15 @@
 from piston.handler import BaseHandler
 from piston.utils import rc
 
+from datetime import datetime
+
 from players.models import Player
 
 
 class PlayerHandler(BaseHandler):
     allowed_methods = ("GET", "POST",)
     model = Player
-    fields = ("name", )
+    fields = ("id", "name", )
 
     def read(self, request, pk=None):
         base = Player.objects
@@ -21,8 +23,13 @@ class PlayerHandler(BaseHandler):
         if req.content_type and req.data:
             data = req.data
 
-            self.model.objects.create(name=data["name"])
-            return rc.CREATED
+            player = self.model.objects.create(name=data["name"],
+                created=datetime.now())
+
+            response = rc.CREATED
+            response.content = dict(id=player.id)
+
+            return response
 
         else:
             return rc.BAD_REQUEST
