@@ -6,11 +6,7 @@ $(function() {
 
         /* First we need a course and players */
         var course = GOLFSTATS_DEBUG.make_course(18, 3);
-        var players = new GOLFSTATS.PlayerList();
-
-        _.each(GOLFSTATS_DEBUG.make_players(1), function(player) {
-            players.add(player);
-        });
+        var players = GOLFSTATS_DEBUG.make_players(3);
 
         /* Create the game */
         var game = new GOLFSTATS.Game({
@@ -19,7 +15,7 @@ $(function() {
         });
 
         /* Our test player */
-        var player = players.models[0];
+        var player = players[0];
 
         /* Make sure initial score is correct */
         var score = game.getTotalScoreByPlayer(player);
