@@ -9,12 +9,15 @@ $(function() {
 
         // Generate 18 holes
         _.each(_.range(1, holes + 1), function(i) {
-            course.courseholes.add(new GOLFSTATS.CourseHole({
+            var ch = new GOLFSTATS.CourseHole({
                 order: i + 1,
                 name: 'Hole ' + i,
                 par: par,
                 course: course,
-            }));
+            });
+            course.courseholes.add(ch);
+            GOLFSTATS.courseholes.add(ch);
+
         });
 
         GOLFSTATS.courses.add(course);

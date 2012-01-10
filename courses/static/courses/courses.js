@@ -1,10 +1,22 @@
 (function(window, document, undefined) {
 
     var Course = Backbone.Model.extend({
-        initialize: function() {
+        initialize: function(attrs) {
             this.courseholes = new CourseHoleList();
-            this.courseholes.url = '/api/courses/' +
-                this.id + '/courseholes/';
+
+            if(this.id) {
+                this.courseholes.url = '/api/courseholes/'
+                    + this.id + '/';
+
+                _.each(attrs.courseholes, function(ch) {
+                    var coursehole = new CourseHole(ch);
+
+                    this.courseholes.add(coursehole);
+
+                    /* Add to global collection of courseholes */
+                    GOLFSTATS.courseholes.add(coursehole);
+                }, this);
+            }
         },
 
         url: '/api/courses/',
@@ -31,18 +43,17 @@
     var CourseList = Backbone.Collection.extend({
         model: Course,
         url: '/api/courses/',
+
+        getByUrl: function(url) {
+            var course_id = url.split('/')[3];
+            return this.get(course_id);
+        },
     });
 
     // Models for course holes
     var CourseHole = Backbone.Model.extend({
-        initialize: function() {
-            if(this.get('course').id) {
-                this.url = '/api/courses/' + this.get('course').id +
-                    '/courseholes/';
-            } else {
-                this.url = '/api/courses/' + this.get('course').cid +
-                    '/courseholes/';
-            }
+        initialize: function(attrs) {
+            this.url = '/api/courseholes/';
         },
 
         getUrl: function() {
@@ -57,10 +68,16 @@
 
     var CourseHoleList = Backbone.Collection.extend({
         model: CourseHole,
+
+        getByUrl: function(url) {
+            var coursehole_id = url.split('/')[3];
+            return this.get(coursehole_id);
+        },
     });
 
     window.GOLFSTATS.Course = Course;
     window.GOLFSTATS.CourseHole = CourseHole;
     window.GOLFSTATS.courses = new CourseList();
+    window.GOLFSTATS.courseholes = new CourseHoleList();
 
 }(window));
