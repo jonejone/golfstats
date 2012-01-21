@@ -17,7 +17,11 @@
 
             if(attrs.players) {
                 _.each(attrs.players, function(player) {
-                    this.players.add(player);
+                    if(typeof player === 'string') {
+                        this.players.add(GOLFSTATS.players.getByUrl(player));
+                    } else {
+                        this.players.add(player);
+                    }
                 }, this);
             }
 
@@ -48,6 +52,13 @@
                 }, this);
             });
 
+            if(attrs.gameholes) {
+                 _.each(attrs.gameholes, function(gh) {
+                    this.gameholes.add(new GameHole(gh));
+                }, this);
+            }
+
+
             this.bind('change:course', function(e) {
                 /* If we get course as a string, objectify it */
                 if(typeof this.get('course') === 'string') {
@@ -55,6 +66,13 @@
                         this.get('course')));
                 }
             });
+
+            if(attrs.course) {
+                if(typeof attrs.course === 'string') {
+                    this.set('course', GOLFSTATS.courses.getByUrl(
+                        attrs.course));
+                }
+            }
         },
         url: '/api/games/',
 
@@ -253,7 +271,5 @@
     window.GOLFSTATS.games = new GameList();
     window.GOLFSTATS.Game = Game;
     window.GOLFSTATS.GameHole =  GameHole;
-
-
 
 }(window));
