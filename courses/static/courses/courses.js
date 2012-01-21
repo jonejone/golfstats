@@ -73,6 +73,20 @@
             var coursehole_id = url.split('/')[3];
             return this.get(coursehole_id);
         },
+
+        getByOrder: function(order) {
+            var coursehole = this.filter(function(ch) {
+                if(ch.get('order') == order) {
+                    return true;
+                }
+            });
+
+            if(coursehole.length) {
+                return coursehole[0];
+            } else {
+                return false;
+            }
+        },
     });
 
     window.GOLFSTATS.Course = Course;
