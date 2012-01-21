@@ -20,7 +20,7 @@ class GameHandler(BaseHandler):
         if pk is not None:
             return self._get_game(base.get(pk=pk))
 
-        return base.all()
+        return [self._get_game(g) for g in base.all()[:5]]
 
     def update(self, req, pk):
         game = Game.objects.get(pk=pk)
