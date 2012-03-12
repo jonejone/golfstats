@@ -55,10 +55,60 @@ $(function() {
 
         });
 
+        // The HolePlayerScoreWidget view, which renders a score widget
+        var PlayHolePlayerScoreWidgetView = Backbone.View.extend({
+
+            events: {
+                'click li.widget-score': 'updateThrowsFromWidget',
+            },
+
+            initialize: function() {
+                this.player = this.options.player;
+                this.coursehole = this.options.coursehole;
+                this.gamehole = this.options.gamehole;
+                this.game = this.options.game;
+
+                this.gamehole.bind('change', function() {
+                    var score_widget = $(this.el)
+
+                    score_widget.find('li').removeClass('widget-score-active');
+                    score_widget_score = score_widget.find('li.widget-score-' +
+                        this.gamehole.get('score').throws);
+
+                    if(score_widget_score) {
+                        score_widget_score.addClass('widget-score-active');
+                    }
+
+                }, this);
+            },
+
+            render: function() {
+                var template = _.template($(
+                    '#hole-player-score-widget-template').html());
+
+                $(this.el).html(template({
+                    player: this.player,
+                    game: this.game,
+                    coursehole: this.coursehole,
+                    gamehole: this.gamehole,
+                }));
+            },
+
+            updateThrowsFromWidget: function(e) {
+                var score = this.gamehole.get('score');
+
+                this.gamehole.set('score', {
+                    'ob_throws': score['ob_throws'],
+                    'throws': $(e.target).data('throws')
+                });
+            },
+        });
+
         // The HolePlayer view which renders just one player on a hole
         var PlayHolePlayerView = Backbone.View.extend({
 
             tagName: 'li',
+            className: 'cf',
 
             events: {
                 'change input': 'updateScoresFromInput',
@@ -106,12 +156,29 @@ $(function() {
                 // by automatically creating it, so we can avoid the condition below. We should
                 // rather always have a gamehole, because now we get into trouble with
                 // binding events later if/when gameholes are created
+                var score_widgets = [];
+
                 if(this.gamehole) {
                     this.gamehole.bind('change', this.updateScoresFromGamehole, this);
                     this.gamehole.bind('change', this.updateTotalScores, this);
+
+                    /* Lets also initialize a score widget for this player */
+                    score_widgets.push(new PlayHolePlayerScoreWidgetView({
+                        gamehole: this.gamehole,
+                        game: this.game,
+                        player: this.player,
+                        coursehole: this.coursehole,
+                    }));
                 }
 
                 this.render();
+
+                var score_widget_container = $(this.el).find('.score-widget');
+
+                _.each(score_widgets, function(score_widget) {
+                    score_widget.render();
+                    score_widget_container.html(score_widget.el);
+                }, this);
             },
 
             render: function() {
